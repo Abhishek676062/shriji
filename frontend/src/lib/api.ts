@@ -5,7 +5,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://shriji.onrender.com/api",
   headers: {
     "Content-Type": "application/json"
   }
@@ -67,7 +67,7 @@ export const api = {
       const resp = await API.get("/daily-verse");
       return resp.data;
     } catch (e) {
-       console.error(e); return null;
+      console.error(e); return null;
     }
   },
 
