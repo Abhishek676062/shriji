@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 253, 251, 247; /* Theme Cream */
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background-color: #0A0F17 !important;
+  background-image: radial-gradient(at 0% 0%, hsla(38, 50%, 15%, 1) 0, transparent 50%), 
+                    radial-gradient(at 50% 0%, hsla(28, 50%, 10%, 1) 0, transparent 50%), 
+                    radial-gradient(at 100% 0%, hsla(42, 60%, 15%, 1) 0, transparent 50%) !important;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Premium Spiritual UI Overrides */
+.glass-panel {
+  background: rgba(15, 25, 38, 0.6) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(229, 115, 0, 0.25) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Base override for any stubborn bg-white */
+.bg-white {
+  background-color: rgba(15, 25, 38, 0.85) !important;
+}
