@@ -65,3 +65,23 @@ def log_chat_interaction(session_id: str, language: str, user_message: str, ai_r
             
     except Exception as e:
         print(f"⚠️ Supabase logging error (Row might not exist / Invalid Keys): {e}")
+
+
+def get_session_history(session_id: str, limit: int = 4) -> list:
+    """
+    Retrieve the last N conversation turns from Supabase for follow-up context.
+    Returns list of dicts: [{"user": "...", "assistant": "..."}, ...]
+    """
+    client = get_supabase()
+    if not client:
+        return []
+    
+    try:
+        resp = client.table("chat_sessions").select("history").eq("session_id", session_id).execute()
+        if resp.data and len(resp.data) > 0:
+            history = resp.data[0].get("history", [])
+            return history[-limit:] if len(history) > limit else history
+    except Exception as e:
+        print(f"⚠️ Session history fetch error: {e}")
+    
+    return []

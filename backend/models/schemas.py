@@ -13,6 +13,7 @@ class ChatRequest(BaseModel):
     message: str = Field(..., description="The user's question or message")
     session_id: Optional[str] = Field(None, description="Optional unique ID for conversation tracking")
     language: Optional[str] = Field(None, description="Force a specific language code (e.g. 'en', 'hi')")
+    history: Optional[List[dict]] = Field(None, description="Conversation history for follow-up context")
 
 class ShlokaCard(BaseModel):
     chunk_id: str

@@ -1,11 +1,11 @@
 /**
  * frontend/lib/api.ts
- * Type-safe Axios bindings fetching 7 routes against the Next backend domain.
+ * Type-safe API bindings with SSE streaming support.
  */
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://shriji.onrender.com/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
   headers: {
     "Content-Type": "application/json"
   }
@@ -47,17 +47,79 @@ export interface ChapterSummary {
   verse_count: number;
 }
 
+// SSE stream event types
+export interface StreamToken { type: 'token'; content: string; }
+export interface StreamTranslated { type: 'translated'; content: string; }
+export interface StreamMetadata {
+  type: 'metadata';
+  emotion_detected?: string;
+  domain_detected?: string;
+  language: string;
+  session_id: string;
+  shlokas: ShlokaCard[];
+}
+export interface StreamDone { type: 'done'; }
+export interface StreamError { type: 'error'; content: string; }
+
+export type StreamEvent = StreamToken | StreamTranslated | StreamMetadata | StreamDone | StreamError;
+
 export const api = {
-  /** 1. Send Query directly resolving LLM payload */
-  sendQuery: async (message: string, session_id?: string, language?: string): Promise<ChatResponse> => {
+  /** 1. Send Query (non-streaming fallback) */
+  sendQuery: async (message: string, session_id?: string, language?: string, history?: Array<{user: string; assistant: string}>): Promise<ChatResponse> => {
     try {
-      const resp = await API.post<ChatResponse>("/chat", { message, session_id, language });
+      const resp = await API.post<ChatResponse>("/chat", { message, session_id, language, history });
       return resp.data;
     } catch (e) {
       if (axios.isAxiosError(e)) {
         throw new Error(e.response?.data?.detail || "Failed to complete chat query.");
       }
       throw new Error("Failed to complete chat query.");
+    }
+  },
+
+  /** 1b. Send Query with SSE Streaming */
+  sendQueryStream: async (
+    message: string,
+    session_id: string,
+    language: string,
+    history: Array<{user: string; assistant: string}>,
+    onEvent: (event: StreamEvent) => void
+  ): Promise<void> => {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    const response = await fetch(`${baseUrl}/chat/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, session_id, language, history }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Stream failed: ${response.status}`);
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error("No response body");
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            onEvent(data as StreamEvent);
+          } catch {
+            // Skip malformed JSON
+          }
+        }
+      }
     }
   },
 
@@ -97,7 +159,6 @@ export const api = {
 
   /** 7. Return Audio Buffer URL (TTS Stub) */
   getTTS: (text: string) => {
-    // Generate valid endpoint URL string for the native audio element to consume directly
     return `${API.defaults.baseURL}/tts?text=${encodeURIComponent(text)}`;
   }
 };

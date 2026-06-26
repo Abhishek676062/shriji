@@ -1,0 +1,31 @@
+{
+  "name": "Shriji AI — Bhagavad Gita Guide",
+  "short_name": "Shriji AI",
+  "description": "Your compassionate AI guide to the Bhagavad Gita's timeless wisdom",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0F17",
+  "theme_color": "#E57300",
+  "orientation": "portrait-primary",
+  "categories": ["education", "lifestyle"],
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
