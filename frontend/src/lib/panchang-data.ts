@@ -127,10 +127,10 @@ export function getPanchangForDate(date: Date, lang: 'en' | 'hi') {
     // Note: getDailyPanchang populates festivals!
     const p = getDailyPanchang(date, loc, options);
     if (p && p.festivals && p.festivals.length > 0) {
-      computedFestivals = p.festivals.map((f: any) => f.name);
-      computedFestivalTypes = p.festivals.map((f: any) => f.type || 'minor');
+      computedFestivals = p.festivals.map((f: { name: string, type?: string }) => f.name);
+      computedFestivalTypes = p.festivals.map((f: { name: string, type?: string }) => f.type || 'minor');
     }
-  } catch (e) {
+  } catch {
     // Ignore
   }
 
