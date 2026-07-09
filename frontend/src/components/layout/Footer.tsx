@@ -36,9 +36,14 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-4 pt-4 border-t border-cream/5 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="text-cream/30 text-xs">
-            © {new Date().getFullYear()} Shriji AI — All rights reserved
-          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+            <p className="text-cream/30 text-xs">
+              © {new Date().getFullYear()} Shriji AI — All rights reserved.
+            </p>
+            <p className="text-cream/20 text-[10px] sm:text-xs">
+              Serving the World from India 🇮🇳
+            </p>
+          </div>
           <div className="flex items-center gap-4 text-cream/30 text-xs">
             <Link href="/about" className="hover:text-saffron transition-colors">Support</Link>
             <Link href="/donate" className="hover:text-saffron transition-colors">Donate</Link>

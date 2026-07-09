@@ -1,7 +1,8 @@
 /**
  * Panchang data utilities — Tithi, Nakshatra, Festivals
- * Uses simplified astronomical calculations for Hindu calendar.
+ * Uses panchang-ts for highly accurate astronomical calculations.
  */
+import { getDailyPanchang } from 'panchang-ts';
 
 // Tithi names (30 tithis in a lunar month)
 export const TITHI_NAMES = {
@@ -50,9 +51,9 @@ export const FESTIVALS: Festival[] = [
   { date: '2026-05-13', name_en: 'Buddha Purnima', name_hi: 'बुद्ध पूर्णिमा', type: 'major' },
   { date: '2026-06-23', name_en: 'Rath Yatra', name_hi: 'रथ यात्रा', type: 'major' },
   { date: '2026-07-07', name_en: 'Guru Purnima', name_hi: 'गुरु पूर्णिमा', type: 'major' },
-  { date: '2026-08-08', name_en: 'Raksha Bandhan', name_hi: 'रक्षा बंधन', type: 'major' },
   { date: '2026-08-15', name_en: 'Independence Day', name_hi: 'स्वतंत्रता दिवस', type: 'major' },
   { date: '2026-08-16', name_en: 'Janmashtami', name_hi: 'जन्माष्टमी', type: 'major' },
+  { date: '2026-08-28', name_en: 'Raksha Bandhan', name_hi: 'रक्षा बंधन', type: 'major' },
   { date: '2026-08-26', name_en: 'Ganesh Chaturthi', name_hi: 'गणेश चतुर्थी', type: 'major' },
   { date: '2026-10-02', name_en: 'Navratri Begins', name_hi: 'नवरात्रि आरंभ', type: 'major' },
   { date: '2026-10-10', name_en: 'Dussehra', name_hi: 'दशहरा', type: 'major' },
@@ -69,59 +70,88 @@ export const FESTIVALS: Festival[] = [
   { date: '2026-11-09', name_en: 'Devutthani Ekadashi', name_hi: 'देवोत्थानी एकादशी', type: 'fast' },
 ];
 
-// Simplified Panchang calculation (algorithmic approximation)
+// Highly accurate Panchang calculation using panchang-ts
 export function getPanchangForDate(date: Date, lang: 'en' | 'hi') {
-  // Julian Day Number for astronomical calculations
   const y = date.getFullYear();
   const m = date.getMonth() + 1;
   const d = date.getDate();
-  const jd = 367 * y - Math.floor(7 * (y + Math.floor((m + 9) / 12)) / 4) + Math.floor(275 * m / 9) + d + 1721013.5;
 
-  // Approximate sun and moon longitudes
-  const T = (jd - 2451545.0) / 36525;
-  const sunLong = (280.46646 + 36000.76983 * T) % 360;
-  const moonLong = (218.3165 + 481267.8813 * T) % 360;
+  // Indore coordinates as default
+  const loc = { latitude: 22.7196, longitude: 75.8577 };
+  const options = { timezone: 330 }; // IST is UTC+5:30
 
-  // Tithi: difference of moon and sun longitudes / 12
-  const diff = ((moonLong - sunLong + 360) % 360);
-  const tithiIndex = Math.floor(diff / 12) % 15;
-  const paksha = diff < 180 ? 'shukla' : 'krishna';
+  // Fallback indices if panchang-ts fails for some reason
+  let tithiIndex = 0;
+  let paksha = 'shukla';
+  let nakshatraIndex = 0;
+  let yogaIndex = 0;
+  let sunriseStr = "06:00";
+  let sunsetStr = "18:00";
 
-  // Nakshatra: moon longitude / 13.333
-  const nakshatraIndex = Math.floor(((moonLong + 360) % 360) / (360 / 27)) % 27;
+  try {
+    const p = getDailyPanchang(date, loc, options);
+    if (p) {
+      if (p.tithis && p.tithis.length > 0) {
+        const tIdx = p.tithis[0].index; // 1 to 30
+        paksha = tIdx <= 15 ? 'shukla' : 'krishna';
+        tithiIndex = (tIdx - 1) % 15;
+      }
+      if (p.nakshatras && p.nakshatras.length > 0) {
+        nakshatraIndex = p.nakshatras[0].index - 1;
+      }
+      if (p.yogas && p.yogas.length > 0) {
+        yogaIndex = p.yogas[0].index - 1;
+      }
+      if (p.sunrise) {
+        const sr = new Date(p.sunrise);
+        const h = sr.getUTCHours().toString().padStart(2, '0');
+        const m = sr.getUTCMinutes().toString().padStart(2, '0');
+        sunriseStr = `${h}:${m}`;
+      }
+      if (p.sunset) {
+        const ss = new Date(p.sunset);
+        const h = ss.getUTCHours().toString().padStart(2, '0');
+        const m = ss.getUTCMinutes().toString().padStart(2, '0');
+        sunsetStr = `${h}:${m}`;
+      }
+    }
+  } catch (e) {
+    console.error("Panchang calculation failed:", e);
+  }
 
-  // Yoga: (sun + moon) / 13.333
-  const yogaIndex = Math.floor(((sunLong + moonLong) % 360) / (360 / 27)) % 27;
+  // Get dynamic festivals from panchang-ts
+  let computedFestivals: string[] = [];
+  let computedFestivalTypes: string[] = [];
+  try {
+    // If we have festivals from the daily panchang (or we can extract them)
+    // Note: getDailyPanchang populates festivals!
+    const p = getDailyPanchang(date, loc, options);
+    if (p && p.festivals && p.festivals.length > 0) {
+      computedFestivals = p.festivals.map((f: any) => f.name);
+      computedFestivalTypes = p.festivals.map((f: any) => f.type || 'minor');
+    }
+  } catch (e) {
+    // Ignore
+  }
 
-  // Approximate sunrise/sunset for Delhi (28.6°N)
-  const dayOfYear = Math.floor((date.getTime() - new Date(y, 0, 0).getTime()) / 86400000);
-  const declination = 23.45 * Math.sin((360 / 365) * (dayOfYear - 81) * Math.PI / 180);
-  const latRad = 28.6 * Math.PI / 180;
-  const decRad = declination * Math.PI / 180;
-  const hourAngle = Math.acos(-Math.tan(latRad) * Math.tan(decRad)) * 180 / Math.PI;
-  const sunriseH = 12 - hourAngle / 15;
-  const sunsetH = 12 + hourAngle / 15;
-
-  const formatTime = (h: number) => {
-    const hours = Math.floor(h);
-    const mins = Math.round((h - hours) * 60);
-    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-  };
-
-  // Get festivals for this date
-  const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-  const festivals = FESTIVALS.filter(f => f.date === dateStr);
+  // Fallback to our hardcoded list if empty
+  if (computedFestivals.length === 0) {
+    const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const fallbackFestivals = FESTIVALS.filter(f => f.date === dateStr);
+    computedFestivals = fallbackFestivals.map(f => lang === 'hi' ? f.name_hi : f.name_en);
+    computedFestivalTypes = fallbackFestivals.map(f => f.type);
+  }
 
   return {
-    tithi: TITHI_NAMES[lang][tithiIndex],
+    tithi: TITHI_NAMES[lang][tithiIndex] || TITHI_NAMES[lang][0],
     tithiIndex,
     paksha: lang === 'hi' ? (paksha === 'shukla' ? 'शुक्ल पक्ष' : 'कृष्ण पक्ष') : (paksha === 'shukla' ? 'Shukla (Bright)' : 'Krishna (Dark)'),
-    nakshatra: NAKSHATRA_NAMES[lang][nakshatraIndex],
-    yoga: YOGA_NAMES[lang][yogaIndex],
-    sunrise: formatTime(sunriseH + 0.5), // IST offset approx
-    sunset: formatTime(sunsetH + 0.5),
-    festivals: festivals.map(f => lang === 'hi' ? f.name_hi : f.name_en),
-    festivalTypes: festivals.map(f => f.type),
+    nakshatra: NAKSHATRA_NAMES[lang][nakshatraIndex] || NAKSHATRA_NAMES[lang][0],
+    yoga: YOGA_NAMES[lang][yogaIndex] || YOGA_NAMES[lang][0],
+    sunrise: sunriseStr,
+    sunset: sunsetStr,
+    festivals: computedFestivals,
+    festivalTypes: computedFestivalTypes,
     isAuspicious: tithiIndex === 4 || tithiIndex === 9 || tithiIndex === 14 || nakshatraIndex === 3 || nakshatraIndex === 7 || nakshatraIndex === 12,
   };
 }

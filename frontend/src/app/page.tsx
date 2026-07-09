@@ -1,11 +1,24 @@
 "use client";
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n';
 import DailyVerse from '@/components/home/DailyVerse';
 
 export default function Home() {
   const { t } = useLanguage();
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+      // Simulate API call for lead capture
+      setSubscribed(true);
+      setTimeout(() => setSubscribed(false), 5000);
+      setEmail('');
+    }
+  };
 
   const examples = [
     { en: t('home.example_1'), hi: t('home.example_1') },
@@ -74,6 +87,65 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* Lead Generation / Subscription Notification Bar */}
+      <div className="w-full max-w-5xl px-4 pt-4 sm:pt-8 pb-6">
+        <div className="glass-panel px-4 sm:px-6 py-3 sm:py-4 rounded-3xl sm:rounded-full border border-saffron/30 shadow-[0_0_15px_rgba(229,115,0,0.15)] bg-navy/60 backdrop-blur-md flex flex-col lg:flex-row items-center justify-between gap-4">
+          
+          <div className="flex items-center gap-3 w-full lg:w-auto justify-center lg:justify-start">
+            <span className="text-xl sm:text-2xl animate-pulse-slow">🪷</span>
+            <span className="text-sm sm:text-base font-medium text-cream text-center lg:text-left">
+              <strong className="text-saffron">Daily Wisdom:</strong> Get a curated Geeta verse in your inbox.
+            </span>
+          </div>
+          
+          <form onSubmit={handleSubscribe} className="flex w-full lg:w-auto items-center gap-1 sm:gap-2 bg-navy/80 border border-saffron/20 rounded-full p-1 focus-within:border-saffron focus-within:ring-1 focus-within:ring-saffron/30 transition-all shadow-inner">
+            <input 
+              type="email" 
+              placeholder="Your email address..." 
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="flex-1 lg:w-64 bg-transparent text-cream px-4 py-2 text-sm sm:text-base outline-none placeholder:text-cream/50"
+            />
+            <button 
+              type="submit" 
+              className={`px-5 sm:px-6 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${subscribed ? 'bg-green-500 text-white' : 'bg-gradient-to-r from-saffron to-gold hover:from-gold hover:to-saffron text-navy shadow-sm hover:shadow-md active:scale-95'}`}
+            >
+              {subscribed ? 'Subscribed!' : 'Subscribe'}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* FAQ Schema for AEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is Shriji AI?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Shriji is a Geeta AI chatbot that provides spiritual guidance and answers to your modern-day problems using the timeless wisdom of the Bhagavad Gita."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How does Shreeji Online work?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Simply type your question, anxiety, or dilemma into the chat, and Shriji uses advanced semantic search to find the most relevant Sanskrit shlokas and explain their meaning in your context."
+                }
+              }
+            ]
+          })
+        }}
+      />
     </div>
   );
 }

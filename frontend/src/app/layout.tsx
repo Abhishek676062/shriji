@@ -13,8 +13,40 @@ const notoDevanagari = Noto_Sans_Devanagari({
 });
 
 export const metadata: Metadata = {
-  title: "Shriji AI | Your Compassionate Guide to the Bhagavad Gita",
-  description: "Experience the profound wisdom of the Bhagavad Gita navigating emotional insights tailored specifically for modern-day existential crises via deep semantic chunking.",
+  title: "Shriji AI | Geeta AI Chatbot | Shreeji Online | श्रीजी",
+  description: "Experience the profound wisdom of the Bhagavad Gita navigating emotional insights tailored specifically for modern-day existential crises via deep semantic chunking. Talk to Shriji, the ultimate Geeta AI Chatbot. भगवद गीता के ज्ञान और श्री कृष्ण के मार्गदर्शन से अपने जीवन की समस्याओं का समाधान पाएं।",
+  keywords: [
+    "shriji", "shreeji online", "geeta ai chatbot", "bhagavad gita ai", "krishna ai", "spiritual ai guide", "shriji ai",
+    "श्रीजी", "श्रीजी ऑनलाइन", "गीता एआई", "गीता चैटबॉट", "भगवद गीता एआई", "कृष्णा एआई"
+  ],
+  metadataBase: new URL('https://www.shriji.online'),
+  alternates: {
+    canonical: '/',
+    languages: {
+      'en-US': '/',
+      'hi-IN': '/',
+    },
+  },
+  openGraph: {
+    title: 'Shriji AI | Geeta AI Chatbot | श्रीजी',
+    description: 'Experience the profound wisdom of the Bhagavad Gita tailored specifically for modern-day existential crises. भगवद गीता के ज्ञान से समाधान पाएं।',
+    url: 'https://www.shriji.online',
+    siteName: 'Shriji',
+    images: [
+      {
+        url: '/icons/apple-touch-icon.png',
+        width: 192,
+        height: 192,
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Shriji AI | Geeta AI Chatbot',
+    description: 'Your compassionate guide to the Bhagavad Gita.',
+  },
   manifest: "/manifest.json",
   icons: {
     icon: '/icons/icon-192.png',
@@ -48,6 +80,39 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Shriji AI" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        {/* JSON-LD Schema for AEO/GEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  "@id": "https://www.shriji.online/#website",
+                  "url": "https://www.shriji.online/",
+                  "name": "Shriji",
+                  "description": "Geeta AI Chatbot and Spiritual Guide",
+                  "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": "https://www.shriji.online/chat?q={search_term_string}",
+                    "query-input": "required name=search_term_string"
+                  }
+                },
+                {
+                  "@type": "Organization",
+                  "@id": "https://www.shriji.online/#organization",
+                  "name": "Shriji AI",
+                  "url": "https://www.shriji.online/",
+                  "logo": "https://www.shriji.online/icons/icon-192.png",
+                  "sameAs": [
+                    "https://www.shriji.online"
+                  ]
+                }
+              ]
+            })
+          }}
+        />
       </head>
       <body className={`${inter.variable} ${notoDevanagari.variable} font-sans text-cream min-h-screen flex flex-col`}>
         <LanguageProvider>
