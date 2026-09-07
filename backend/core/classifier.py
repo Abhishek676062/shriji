@@ -2,7 +2,7 @@
 backend/core/classifier.py
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 Emotion and problem domain classifier targeting exact metadata tags.
-Uses Groq llama-3.3-70b-versatile.
+Uses Groq openai.
 """
 
 import json
@@ -16,7 +16,7 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 client = AsyncGroq(api_key=GROQ_API_KEY)
-MODEL_NAME = "llama-3.3-70b-versatile"
+MODEL_NAME = "openai/gpt-oss-20b"
 
 # The prompt exactly maps to the required gita_verses_enhanced tags
 CLASSIFICATION_PROMPT = """You are an intent classification system for a Bhagavad Gita AI assistant.

@@ -21,7 +21,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 client = AsyncGroq(api_key=GROQ_API_KEY)
 
 # Use the highly capable 70B model for accurate cross-lingual translations
-TRANSLATION_MODEL = "llama-3.3-70b-versatile"
+TRANSLATION_MODEL = "openai/gpt-oss-120b"
 
 
 def detect_language(text: str) -> str:
